@@ -27,10 +27,10 @@ from maskrcnn_benchmark.utils.miscellaneous import mkdir, save_config
 
 # See if we can use apex.DistributedDataParallel instead of the torch default,
 # and enable mixed-precision via apex.amp
-try:
+"""try:
     from apex import amp
 except ImportError:
-    raise ImportError('Use APEX for multi-precision via apex.amp')
+    raise ImportError('Use APEX for multi-precision via apex.amp')"""
 
 
 def train(cfg, local_rank, distributed):
