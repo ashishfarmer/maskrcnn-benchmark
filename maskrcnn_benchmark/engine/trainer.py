@@ -94,8 +94,8 @@ def do_train(
         losses.backward()
         # Note: If mixed precision is not used, this ends up doing nothing
         # Otherwise apply loss scaling for mixed-precision recipe
-        with amp.scale_loss(losses, optimizer) as scaled_losses:
-            scaled_losses.backward()
+        #with amp.scale_loss(losses, optimizer) as scaled_losses:
+        #    scaled_losses.backward()
         optimizer.step()
         scheduler.step()
 
