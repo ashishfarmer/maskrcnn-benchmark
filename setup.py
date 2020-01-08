@@ -10,9 +10,10 @@ from setuptools import setup
 from torch.utils.cpp_extension import CUDA_HOME
 from torch.utils.cpp_extension import CppExtension
 from torch.utils.cpp_extension import CUDAExtension
+from torch.utils.cpp_extension import HIP_COMP
+from torch.utils.hipify import hipify_python
 
 requirements = ["torch", "torchvision"]
-
 
 def get_extensions():
     this_dir = os.path.dirname(os.path.abspath(__file__))
@@ -20,7 +21,17 @@ def get_extensions():
 
     main_file = glob.glob(os.path.join(extensions_dir, "*.cpp"))
     source_cpu = glob.glob(os.path.join(extensions_dir, "cpu", "*.cpp"))
-    source_cuda = glob.glob(os.path.join(extensions_dir, "cuda", "*.cu"))
+
+    if HIP_COMP:
+        hipify_python.hipify(
+            project_directory=this_dir,
+            output_directory=this_dir,
+            includes="maskrcnn_benchmark/csrc/cuda/*",
+            show_detailed=True,
+            )
+        source_cuda = glob.glob(os.path.join(extensions_dir, "hip", "*.hip"))
+    else:
+        source_cuda = glob.glob(os.path.join(extensions_dir, "cuda", "*.cu"))
 
     sources = main_file + source_cpu
     extension = CppExtension
@@ -31,13 +42,17 @@ def get_extensions():
     if (torch.cuda.is_available() and CUDA_HOME is not None) or os.getenv("FORCE_CUDA", "0") == "1":
         extension = CUDAExtension
         sources += source_cuda
+        print(sources)
         define_macros += [("WITH_CUDA", None)]
-        extra_compile_args["nvcc"] = [
-            "-DCUDA_HAS_FP16=1",
-            "-D__CUDA_NO_HALF_OPERATORS__",
-            "-D__CUDA_NO_HALF_CONVERSIONS__",
-            "-D__CUDA_NO_HALF2_OPERATORS__",
-        ]
+        if not HIP_COMP:
+            extra_compile_args["nvcc"] = [
+                "-DCUDA_HAS_FP16=1",
+                "-D__CUDA_NO_HALF_OPERATORS__",
+                "-D__CUDA_NO_HALF_CONVERSIONS__",
+                "-D__CUDA_NO_HALF2_OPERATORS__",
+            ]
+        else:
+            extra_compile_args["nvcc"] = []
 
     sources = [os.path.join(extensions_dir, s) for s in sources]
 
