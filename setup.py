@@ -10,7 +10,7 @@ from setuptools import setup
 from torch.utils.cpp_extension import CUDA_HOME
 from torch.utils.cpp_extension import CppExtension
 from torch.utils.cpp_extension import CUDAExtension
-from torch.utils.cpp_extension import HIP_COMP
+from torch.utils.cpp_extension import ROCM_HOME
 from torch.utils.hipify import hipify_python
 
 requirements = ["torch", "torchvision"]
@@ -22,12 +22,15 @@ def get_extensions():
     main_file = glob.glob(os.path.join(extensions_dir, "*.cpp"))
     source_cpu = glob.glob(os.path.join(extensions_dir, "cpu", "*.cpp"))
 
-    if HIP_COMP:
+    is_rocm_pytorch = os.path.exists(ROCM_HOME)
+
+    if is_rocm_pytorch:
         hipify_python.hipify(
             project_directory=this_dir,
             output_directory=this_dir,
             includes="maskrcnn_benchmark/csrc/cuda/*",
             show_detailed=True,
+            is_pytorch_extension=True,
             )
         source_cuda = glob.glob(os.path.join(extensions_dir, "hip", "*.hip"))
     else:
@@ -44,7 +47,7 @@ def get_extensions():
         sources += source_cuda
         print(sources)
         define_macros += [("WITH_CUDA", None)]
-        if not HIP_COMP:
+        if not is_rocm_pytorch:
             extra_compile_args["nvcc"] = [
                 "-DCUDA_HAS_FP16=1",
                 "-D__CUDA_NO_HALF_OPERATORS__",
