@@ -43,7 +43,7 @@ __global__ void SigmoidFocalLossForward(const int nthreads,
     T  p = 1. / (1. + expf(-logits[i]));
 
     // (1-p)**gamma * log(p) where
-    T term1 = powf((1. - p), gamma) * logf(max(p, FLT_MIN));
+    T term1 = powf((1. - p), gamma) * logf(fmaxf(p, FLT_MIN));
 
     // p**gamma * log(1-p)
     T term2 = powf(p, gamma) *
@@ -85,7 +85,7 @@ __global__ void SigmoidFocalLossBackward(const int nthreads,
 
     // (1-p)**g * (1 - p - g*p*log(p)
     T term1 = powf((1. - p), gamma) *
-                      (1. - p - (p * gamma * logf(max(p, FLT_MIN))));
+                      (1. - p - (p * gamma * logf(fmaxf(p, FLT_MIN))));
 
     // (p**g) * (g*(1-p)*log(1-p) - p)
     T term2 = powf(p, gamma) *

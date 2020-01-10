@@ -89,8 +89,8 @@ __global__ void RoIAlignForward(const int nthreads, const T* bottom_data,
     // T roi_end_h = round(offset_bottom_rois[4] * spatial_scale);
 
     // Force malformed ROIs to be 1x1
-    T roi_width = max(roi_end_w - roi_start_w, (T)1.);
-    T roi_height = max(roi_end_h - roi_start_h, (T)1.);
+    T roi_width = fmaxf(roi_end_w - roi_start_w, (T)1.);
+    T roi_height = fmaxf(roi_end_h - roi_start_h, (T)1.);
     T bin_size_h = static_cast<T>(roi_height) / static_cast<T>(pooled_height);
     T bin_size_w = static_cast<T>(roi_width) / static_cast<T>(pooled_width);
 
@@ -203,8 +203,8 @@ __global__ void RoIAlignBackwardFeature(const int nthreads, const T* top_diff,
     // T roi_end_h = round(offset_bottom_rois[4] * spatial_scale);
 
     // Force malformed ROIs to be 1x1
-    T roi_width = max(roi_end_w - roi_start_w, (T)1.);
-    T roi_height = max(roi_end_h - roi_start_h, (T)1.);
+    T roi_width = fmaxf(roi_end_w - roi_start_w, (T)1.);
+    T roi_height = fmaxf(roi_end_h - roi_start_h, (T)1.);
     T bin_size_h = static_cast<T>(roi_height) / static_cast<T>(pooled_height);
     T bin_size_w = static_cast<T>(roi_width) / static_cast<T>(pooled_width);
 

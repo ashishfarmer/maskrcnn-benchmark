@@ -87,8 +87,8 @@ __global__ void DeformablePSROIPoolForwardKernel(
     scalar_t roi_end_h = (scalar_t)(round(offset_bottom_rois[4]) + 1.) * spatial_scale - 0.5;
 
     // Force too small ROIs to be 1x1
-    scalar_t roi_width = max(roi_end_w - roi_start_w, 0.1); //avoid 0
-    scalar_t roi_height = max(roi_end_h - roi_start_h, 0.1);
+    scalar_t roi_width = fmaxf(roi_end_w - roi_start_w, 0.1); //avoid 0
+    scalar_t roi_height = fmaxf(roi_end_h - roi_start_h, 0.1);
 
     // Compute w and h at bottom
     scalar_t bin_size_h = roi_height / (scalar_t)(pooled_height);
@@ -127,8 +127,8 @@ __global__ void DeformablePSROIPoolForwardKernel(
         {
           continue;
         }
-        w = min(max(w, 0.), width - 1.);
-        h = min(max(h, 0.), height - 1.);
+        w = fminf(fmaxf(w, 0.), width - 1.);
+        h = fminf(fmaxf(h, 0.), height - 1.);
         int c = (ctop * group_size + gh) * group_size + gw;
         scalar_t val = bilinear_interp(offset_bottom_data + c * height * width, w, h, width, height);
         sum += val;
@@ -180,8 +180,8 @@ __global__ void DeformablePSROIPoolBackwardAccKernel(
     scalar_t roi_end_h = (scalar_t)(round(offset_bottom_rois[4]) + 1.) * spatial_scale - 0.5;
 
     // Force too small ROIs to be 1x1
-    scalar_t roi_width = max(roi_end_w - roi_start_w, 0.1); //avoid 0
-    scalar_t roi_height = max(roi_end_h - roi_start_h, 0.1);
+    scalar_t roi_width = fmaxf(roi_end_w - roi_start_w, 0.1); //avoid 0
+    scalar_t roi_height = fmaxf(roi_end_h - roi_start_h, 0.1);
 
     // Compute w and h at bottom
     scalar_t bin_size_h = roi_height / (scalar_t)(pooled_height);
@@ -224,8 +224,8 @@ __global__ void DeformablePSROIPoolBackwardAccKernel(
         {
           continue;
         }
-        w = min(max(w, 0.), width - 1.);
-        h = min(max(h, 0.), height - 1.);
+        w = fminf(fmaxf(w, 0.), width - 1.);
+        h = fminf(fmaxf(h, 0.), height - 1.);
         int c = (ctop * group_size + gh) * group_size + gw;
         // backward on feature
         int x0 = floor(w);
